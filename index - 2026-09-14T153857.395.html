@@ -1,0 +1,1229 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Pedido de Reposição — Rede Nilo</title>
+<style>
+  :root{
+    --amarelo:#FFC400;
+    --amarelo-escuro:#E6A100;
+    --azul:#1B2A4A;
+    --grafite:#333333;
+    --fundo:#F7F7F5;
+    --branco:#FFFFFF;
+    --vermelho:#C0392B;
+    --verde:#2E7D32;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+    background:var(--fundo);
+    color:var(--grafite);
+    padding-bottom:100px;
+  }
+  header{
+    background:var(--azul);
+    color:var(--branco);
+    padding:16px 18px;
+    position:sticky;
+    top:0;
+    z-index:20;
+    box-shadow:0 2px 8px rgba(0,0,0,.15);
+  }
+  header .top{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+  }
+  header h1{
+    font-size:17px;
+    margin:0;
+    font-weight:700;
+    letter-spacing:.3px;
+  }
+  header .badge{
+    background:var(--amarelo);
+    color:var(--azul);
+    font-weight:800;
+    font-size:11px;
+    padding:3px 9px;
+    border-radius:20px;
+  }
+  header .sub{
+    font-size:12px;
+    color:#c7cee0;
+    margin-top:2px;
+  }
+  main{
+    max-width:640px;
+    margin:0 auto;
+    padding:14px;
+  }
+  .card{
+    background:var(--branco);
+    border-radius:14px;
+    padding:16px;
+    margin-bottom:14px;
+    box-shadow:0 1px 4px rgba(0,0,0,.06);
+    border:1px solid #ECECE9;
+  }
+  .card h2{
+    font-size:13px;
+    text-transform:uppercase;
+    letter-spacing:.6px;
+    color:var(--azul);
+    margin:0 0 12px 0;
+    font-weight:800;
+  }
+  label{
+    display:block;
+    font-size:12px;
+    font-weight:700;
+    color:#555;
+    margin-bottom:5px;
+  }
+  input[type=text], input[type=number], select{
+    width:100%;
+    padding:11px 12px;
+    border:1.5px solid #DDD;
+    border-radius:9px;
+    font-size:15px;
+    background:var(--branco);
+    color:var(--grafite);
+  }
+  input:focus, select:focus{
+    outline:none;
+    border-color:var(--amarelo-escuro);
+  }
+  .row{
+    display:flex;
+    gap:10px;
+  }
+  .row > div{flex:1;}
+  .field{margin-bottom:12px;}
+  .btn{
+    border:none;
+    border-radius:10px;
+    padding:12px 16px;
+    font-weight:800;
+    font-size:14px;
+    cursor:pointer;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    transition:filter .15s, transform .05s;
+  }
+  .btn:active{transform:scale(.97);}
+  .btn-primary{
+    background:var(--amarelo);
+    color:var(--azul);
+    width:100%;
+  }
+  .btn-primary:hover{filter:brightness(1.05);}
+  .btn-secondary{
+    background:var(--azul);
+    color:var(--branco);
+  }
+  .btn-outline{
+    background:transparent;
+    border:1.5px solid var(--azul);
+    color:var(--azul);
+  }
+  .btn-danger{
+    background:#FBEAEA;
+    color:var(--vermelho);
+  }
+  .btn-block{width:100%;}
+  .scan-row{
+    display:flex;
+    gap:8px;
+  }
+  .scan-row input{flex:1;}
+  #reader{
+    width:100%;
+    border-radius:10px;
+    overflow:hidden;
+    margin-top:10px;
+    display:none;
+    border:2px solid var(--azul);
+  }
+  #reader.active{display:block;}
+  .list-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:10px;
+  }
+  .list-header h2{margin:0;}
+  .count-pill{
+    background:var(--amarelo);
+    color:var(--azul);
+    font-weight:800;
+    font-size:12px;
+    padding:3px 11px;
+    border-radius:20px;
+  }
+  .item{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:10px 0;
+    border-bottom:1px solid #F0F0EE;
+  }
+  .item:last-child{border-bottom:none;}
+  .item .info{flex:1; min-width:0;}
+  .item .desc{
+    font-weight:700;
+    font-size:14px;
+    color:var(--azul);
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+  .item .meta{
+    font-size:12px;
+    color:#888;
+    margin-top:2px;
+  }
+  .item .qty{
+    font-weight:800;
+    font-size:15px;
+    color:var(--grafite);
+    white-space:nowrap;
+    min-width:60px;
+    text-align:right;
+  }
+  .item .del{
+    background:none;
+    border:none;
+    color:var(--vermelho);
+    font-size:20px;
+    cursor:pointer;
+    padding:4px 6px;
+    line-height:1;
+  }
+  .item.checked{
+    background:#F3FBF4;
+    border-radius:8px;
+    padding-left:6px;
+    padding-right:6px;
+  }
+  .item.checked .desc{
+    text-decoration:line-through;
+    color:#8AA08D;
+  }
+  .chk{
+    flex:0 0 auto;
+    width:26px;
+    height:26px;
+    border-radius:7px;
+    border:2px solid #CFCFCB;
+    background:var(--branco);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:16px;
+    font-weight:900;
+    color:transparent;
+    cursor:pointer;
+  }
+  .chk.on{
+    background:var(--verde);
+    border-color:var(--verde);
+    color:var(--branco);
+  }
+  .progress-wrap{
+    margin-bottom:12px;
+  }
+  .progress-bar{
+    height:8px;
+    background:#EEEEEB;
+    border-radius:6px;
+    overflow:hidden;
+  }
+  .progress-fill{
+    height:100%;
+    background:var(--verde);
+    border-radius:6px;
+    transition:width .25s;
+  }
+  .progress-label{
+    font-size:11px;
+    color:#888;
+    margin-top:5px;
+    display:flex;
+    justify-content:space-between;
+  }
+  .mode-banner{
+    background:#EAF6EC;
+    border:1px solid #CFE9D2;
+    color:var(--verde);
+    font-size:12px;
+    font-weight:700;
+    padding:9px 12px;
+    border-radius:9px;
+    margin-bottom:12px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .order-title{
+    font-size:14px;
+    font-weight:800;
+    color:var(--azul);
+    margin-bottom:2px;
+  }
+  .order-sub{
+    font-size:11.5px;
+    color:#888;
+    margin-bottom:12px;
+  }
+  .empty{
+    text-align:center;
+    color:#999;
+    font-size:13px;
+    padding:24px 10px;
+  }
+  footer.actionbar{
+    position:fixed;
+    bottom:0;
+    left:0;
+    right:0;
+    background:var(--branco);
+    border-top:1px solid #E5E5E2;
+    padding:10px 14px calc(10px + env(safe-area-inset-bottom));
+    box-shadow:0 -2px 10px rgba(0,0,0,.06);
+    z-index:20;
+  }
+  footer.actionbar .wrap{
+    max-width:640px;
+    margin:0 auto;
+    display:flex;
+    gap:10px;
+  }
+  .toast{
+    position:fixed;
+    top:70px;
+    left:50%;
+    transform:translateX(-50%);
+    background:var(--azul);
+    color:var(--branco);
+    padding:10px 18px;
+    border-radius:30px;
+    font-size:13px;
+    font-weight:700;
+    z-index:100;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .25s, top .25s;
+    box-shadow:0 4px 14px rgba(0,0,0,.2);
+  }
+  .toast.show{opacity:1; top:80px;}
+  .toast.err{background:var(--vermelho);}
+  .toast.ok{background:var(--verde);}
+  .modal-bg{
+    position:fixed; inset:0;
+    background:rgba(27,42,74,.55);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    z-index:200;
+    padding:20px;
+  }
+  .modal-bg.show{display:flex;}
+  .modal{
+    background:var(--branco);
+    border-radius:14px;
+    padding:20px;
+    width:100%;
+    max-width:400px;
+  }
+  .modal h3{
+    margin:0 0 6px 0;
+    color:var(--azul);
+    font-size:16px;
+  }
+  .modal p{
+    font-size:13px;
+    color:#666;
+    margin:0 0 14px 0;
+  }
+  .modal .actions{
+    display:flex;
+    gap:10px;
+    margin-top:16px;
+  }
+  .modal .actions .btn{flex:1;}
+  small.hint{
+    display:block;
+    color:#999;
+    font-size:11px;
+    margin-top:4px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="top">
+    <div>
+      <h1>📦 Pedido de Reposição</h1>
+      <div class="sub">Depósito → Loja</div>
+    </div>
+    <span class="badge">REDE NILO</span>
+  </div>
+  <div class="top" style="margin-top:8px; gap:8px;">
+    <button class="btn btn-outline" id="btnOpenOrders" style="flex:1; padding:8px; font-size:12px; background:rgba(255,255,255,.08); border-color:rgba(255,255,255,.35); color:#fff;">📂 Pedidos em Aberto</button>
+    <button class="btn btn-outline" id="btnSettings" style="flex:0 0 auto; padding:8px 12px; font-size:12px; background:rgba(255,255,255,.08); border-color:rgba(255,255,255,.35); color:#fff;">⚙️</button>
+  </div>
+  <div id="syncStatus" style="font-size:10.5px; color:#c7cee0; margin-top:6px;"></div>
+</header>
+
+<main>
+
+  <div class="card" id="addItemCard">
+    <h2>Adicionar Item</h2>
+
+    <div class="field">
+      <label>Código de barras</label>
+      <div class="scan-row">
+        <input type="text" id="inpBarcode" placeholder="Digite ou escaneie o código" inputmode="numeric">
+        <button class="btn btn-secondary" id="btnScan">📷 Ler</button>
+      </div>
+      <div id="reader"></div>
+      <small class="hint" id="scanHint"></small>
+    </div>
+
+    <div class="field">
+      <label>Descrição do produto</label>
+      <input type="text" id="inpDesc" placeholder="Ex: Arroz Tio João 5kg">
+      <small class="hint" id="descHint"></small>
+    </div>
+
+    <div class="row">
+      <div class="field">
+        <label>Quantidade</label>
+        <input type="number" id="inpQty" min="0" step="1" placeholder="0">
+      </div>
+      <div class="field">
+        <label>Unidade</label>
+        <select id="inpUnit">
+          <option value="UND">UND</option>
+          <option value="CX">CX</option>
+          <option value="FD">FD (Fardo)</option>
+          <option value="KG">KG</option>
+          <option value="PCT">PCT</option>
+        </select>
+      </div>
+    </div>
+
+    <button class="btn btn-primary btn-block" id="btnAdd">+ Adicionar à Lista</button>
+  </div>
+
+  <div class="card">
+    <div id="modeBanner"></div>
+    <div id="orderInfoBlock"></div>
+    <div class="list-header">
+      <h2 id="listTitle">Lista do Pedido</h2>
+      <span class="count-pill" id="countPill">0 itens</span>
+    </div>
+    <div id="progressBlock"></div>
+    <div id="itemList">
+      <div class="empty" id="emptyMsg">Nenhum item adicionado ainda.<br>Escaneie ou digite um código acima.</div>
+    </div>
+  </div>
+
+</main>
+
+<footer class="actionbar">
+  <div class="wrap" id="actionbarMontagem">
+    <button class="btn btn-outline" id="btnClear" style="flex:0 0 auto; padding:12px 14px;">🗑️</button>
+    <button class="btn btn-primary" id="btnFinalize" style="flex:1;">✅ Finalizar e Gerar Lista de Separação</button>
+  </div>
+  <div class="wrap" id="actionbarSeparacao" style="display:none;">
+    <button class="btn btn-outline" id="btnReprintPDF" style="flex:0 0 auto; padding:12px 14px;">📄</button>
+    <button class="btn btn-secondary" id="btnEditList" style="flex:0 0 auto; padding:12px 14px;">✏️</button>
+    <button class="btn btn-primary" id="btnNewOrder" style="flex:1;">🔄 Novo Pedido</button>
+  </div>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<div class="modal-bg" id="modalFinalize">
+  <div class="modal">
+    <h3>Finalizar Pedido</h3>
+    <p>Dê um nome para este pedido. Ele será usado no arquivo PDF gerado.</p>
+    <div class="field">
+      <label>Nome do pedido / referência</label>
+      <input type="text" id="inpOrderName" placeholder="Ex: Loja Shopping - 14/09/2026">
+    </div>
+    <div class="field">
+      <label>Loja de destino (opcional)</label>
+      <input type="text" id="inpStore" placeholder="Ex: Loja Nova Xavantina">
+    </div>
+    <div class="field">
+      <label>Solicitante (opcional)</label>
+      <input type="text" id="inpRequester" placeholder="Seu nome">
+    </div>
+    <div class="actions">
+      <button class="btn btn-outline" id="btnCancelModal">Cancelar</button>
+      <button class="btn btn-primary" id="btnConfirmFinalize">Gerar PDF</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="modalSettings">
+  <div class="modal">
+    <h3>Configurações de Sincronização</h3>
+    <p>Cole a URL do Apps Script (Google Sheets) para sincronizar pedidos entre aparelhos. Deixe em branco para usar apenas neste dispositivo.</p>
+    <div class="field">
+      <label>URL do Apps Script</label>
+      <input type="text" id="inpApiUrl" placeholder="https://script.google.com/macros/s/.../exec">
+    </div>
+    <div id="settingsStatus" style="font-size:12px; margin-bottom:6px;"></div>
+    <div class="actions">
+      <button class="btn btn-outline" id="btnCancelSettings">Cancelar</button>
+      <button class="btn btn-primary" id="btnSaveSettings">Salvar e Testar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="modalOrders">
+  <div class="modal" style="max-width:480px;">
+    <h3>Pedidos em Aberto</h3>
+    <p>Selecione um pedido para continuar a separação neste aparelho.</p>
+    <div id="ordersList" style="max-height:320px; overflow-y:auto;"></div>
+    <div class="actions">
+      <button class="btn btn-outline" id="btnCloseOrders" style="width:100%;">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+<script>
+(function(){
+  "use strict";
+
+  var STORAGE_KEY = "nilo_pedido_reposicao_v1";
+  var API_URL_KEY = "nilo_pedido_reposicao_apiurl";
+  var PRODUTOS_CACHE_KEY = "nilo_produtos_db_v1";
+  var items = [];
+  var mode = "montagem"; // "montagem" | "separacao"
+  var orderInfo = { name: "", store: "", requester: "", pedidoId: "" };
+  var apiUrl = "";
+  var pollTimer = null;
+  var html5QrCode = null;
+  var scanning = false;
+  var produtosDB = {};
+  var produtosLoaded = false;
+
+  var $ = function(id){ return document.getElementById(id); };
+
+  // ---------- Base de produtos (código de barras -> descrição) ----------
+
+  function loadProdutosDB(){
+    // fallback imediato do cache local (funciona offline)
+    try{
+      var cached = localStorage.getItem(PRODUTOS_CACHE_KEY);
+      if(cached){
+        produtosDB = JSON.parse(cached);
+        produtosLoaded = true;
+      }
+    }catch(e){}
+
+    fetch("produtos.json").then(function(r){
+      if(!r.ok) throw new Error("http " + r.status);
+      return r.json();
+    }).then(function(data){
+      produtosDB = data;
+      produtosLoaded = true;
+      try{ localStorage.setItem(PRODUTOS_CACHE_KEY, JSON.stringify(data)); }catch(e){}
+    }).catch(function(){
+      if(!produtosLoaded){
+        showToast("Base de produtos não encontrada — descrição só manual", "err");
+      }
+    });
+  }
+
+  function buscarDescricao(barcode){
+    if(!barcode) return null;
+    var code = String(barcode).trim();
+    if(produtosDB.hasOwnProperty(code)) return produtosDB[code];
+    // remove zeros à esquerda para casar formatos diferentes de exportação
+    var stripped = code.replace(/^0+/, "");
+    if(stripped && produtosDB.hasOwnProperty(stripped)) return produtosDB[stripped];
+    return null;
+  }
+
+  function autoPreencherDescricao(){
+    var barcode = $("inpBarcode").value.trim();
+    var descInput = $("inpDesc");
+    var hint = $("descHint");
+    if(!barcode){ hint.textContent = ""; return; }
+
+    var desc = buscarDescricao(barcode);
+    if(desc){
+      descInput.value = desc;
+      hint.style.color = "#2E7D32";
+      hint.textContent = "✓ Descrição encontrada na base de produtos";
+    } else {
+      hint.style.color = "#999";
+      hint.textContent = produtosLoaded ? "Produto não encontrado na base — digite a descrição manualmente" : "Carregando base de produtos...";
+    }
+  }
+
+  function loadState(){
+    try{
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if(raw){
+        var parsed = JSON.parse(raw) || {};
+        items = parsed.items || [];
+        mode = parsed.mode || "montagem";
+        orderInfo = parsed.orderInfo || { name:"", store:"", requester:"", pedidoId:"" };
+      }
+      apiUrl = localStorage.getItem(API_URL_KEY) || "";
+    }catch(e){ items = []; mode = "montagem"; }
+  }
+  function saveState(){
+    try{
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ items: items, mode: mode, orderInfo: orderInfo }));
+    }catch(e){}
+  }
+
+  function newId(prefix){
+    return prefix + Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+  }
+
+  function updateSyncBadge(){
+    var el = $("syncStatus");
+    el.textContent = apiUrl ? "🔗 Sincronizado com Google Sheets" : "📱 Somente neste aparelho (sem sincronização)";
+  }
+
+  // ---------- API (Apps Script) ----------
+
+  function apiGet(params){
+    if(!apiUrl) return Promise.reject(new Error("no-api"));
+    var qs = Object.keys(params).map(function(k){
+      return encodeURIComponent(k) + "=" + encodeURIComponent(params[k]);
+    }).join("&");
+    return fetch(apiUrl + "?" + qs).then(function(r){ return r.json(); });
+  }
+
+  function apiPost(action, payload){
+    if(!apiUrl) return Promise.reject(new Error("no-api"));
+    var body = Object.assign({ action: action }, payload);
+    return fetch(apiUrl, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify(body)
+    }).then(function(r){ return r.json(); });
+  }
+
+  function showToast(msg, type){
+    var t = $("toast");
+    t.textContent = msg;
+    t.className = "toast show" + (type ? " " + type : "");
+    setTimeout(function(){ t.className = "toast" + (type ? " " + type : ""); }, 2200);
+  }
+
+  function updateModeUI(){
+    var isSep = (mode === "separacao");
+
+    $("addItemCard").style.display = isSep ? "none" : "";
+    $("actionbarMontagem").style.display = isSep ? "none" : "flex";
+    $("actionbarSeparacao").style.display = isSep ? "flex" : "none";
+    $("listTitle").textContent = isSep ? "Checklist de Separação" : "Lista do Pedido";
+
+    if(isSep){
+      $("modeBanner").innerHTML = '<div class="mode-banner">📋 Modo Separação — marque cada item conforme for separado no depósito</div>';
+      var sub = [];
+      if(orderInfo.store) sub.push("Destino: " + escapeHtml(orderInfo.store));
+      if(orderInfo.requester) sub.push("Solicitante: " + escapeHtml(orderInfo.requester));
+      $("orderInfoBlock").innerHTML = orderInfo.name ?
+        '<div class="order-title">' + escapeHtml(orderInfo.name) + '</div>' +
+        '<div class="order-sub">' + (sub.length ? sub.join(" · ") : "") + '</div>' : "";
+    } else {
+      $("modeBanner").innerHTML = "";
+      $("orderInfoBlock").innerHTML = "";
+    }
+  }
+
+  function renderList(){
+    var list = $("itemList");
+    var empty = $("emptyMsg");
+    var isSep = (mode === "separacao");
+
+    $("countPill").textContent = items.length + (items.length === 1 ? " item" : " itens");
+    updateModeUI();
+
+    if(items.length === 0){
+      list.innerHTML = "";
+      list.appendChild(empty);
+      $("progressBlock").innerHTML = "";
+      return;
+    }
+
+    if(isSep){
+      var done = items.filter(function(it){ return it.separado; }).length;
+      var pct = Math.round((done / items.length) * 100);
+      $("progressBlock").innerHTML =
+        '<div class="progress-wrap">' +
+          '<div class="progress-bar"><div class="progress-fill" style="width:' + pct + '%"></div></div>' +
+          '<div class="progress-label"><span>' + done + ' de ' + items.length + ' separados</span><span>' + pct + '%</span></div>' +
+        '</div>';
+    } else {
+      $("progressBlock").innerHTML = "";
+    }
+
+    var html = "";
+    items.forEach(function(it, idx){
+      var checkedClass = (isSep && it.separado) ? " checked" : "";
+      var checkboxHtml = isSep ?
+        '<div class="chk' + (it.separado ? ' on' : '') + '" data-idx="' + idx + '">' + (it.separado ? '✓' : '') + '</div>' : "";
+      var delHtml = !isSep ?
+        '<button class="del" data-idx="' + idx + '" title="Remover">✕</button>' : "";
+
+      html += '<div class="item' + checkedClass + '">' +
+        checkboxHtml +
+        '<div class="info">' +
+          '<div class="desc">' + escapeHtml(it.desc) + '</div>' +
+          '<div class="meta">Cód: ' + escapeHtml(it.barcode || "—") + '</div>' +
+        '</div>' +
+        '<div class="qty">' + it.qty + ' ' + it.unit + '</div>' +
+        delHtml +
+      '</div>';
+    });
+    list.innerHTML = html;
+
+    if(isSep){
+      Array.prototype.forEach.call(list.querySelectorAll(".chk"), function(el){
+        el.addEventListener("click", function(){
+          var i = parseInt(el.getAttribute("data-idx"), 10);
+          items[i].separado = !items[i].separado;
+          saveState();
+          renderList();
+          if(apiUrl && orderInfo.pedidoId){
+            apiPost("marcarItem", { pedidoId: orderInfo.pedidoId, itemId: items[i].id, separado: items[i].separado })
+              .catch(function(){ showToast("Falha ao sincronizar item", "err"); });
+          }
+        });
+      });
+    } else {
+      Array.prototype.forEach.call(list.querySelectorAll(".del"), function(btn){
+        btn.addEventListener("click", function(){
+          var i = parseInt(btn.getAttribute("data-idx"), 10);
+          items.splice(i, 1);
+          saveState();
+          renderList();
+        });
+      });
+    }
+  }
+
+  function escapeHtml(s){
+    return String(s == null ? "" : s)
+      .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  }
+
+  function addItem(){
+    var barcode = $("inpBarcode").value.trim();
+    var desc = $("inpDesc").value.trim();
+    var qty = parseFloat($("inpQty").value);
+    var unit = $("inpUnit").value;
+
+    if(!desc){
+      showToast("Informe a descrição do produto", "err");
+      $("inpDesc").focus();
+      return;
+    }
+    if(!qty || qty <= 0){
+      showToast("Informe uma quantidade válida", "err");
+      $("inpQty").focus();
+      return;
+    }
+
+    items.push({ id: newId("it"), barcode: barcode, desc: desc, qty: qty, unit: unit, separado: false, ts: Date.now() });
+    saveState();
+    renderList();
+    showToast("Item adicionado", "ok");
+
+    $("inpBarcode").value = "";
+    $("inpDesc").value = "";
+    $("inpQty").value = "";
+    $("descHint").textContent = "";
+    $("inpBarcode").focus();
+  }
+
+  function stopScanner(){
+    if(html5QrCode && scanning){
+      html5QrCode.stop().then(function(){
+        html5QrCode.clear();
+        scanning = false;
+        $("reader").classList.remove("active");
+      }).catch(function(){
+        scanning = false;
+        $("reader").classList.remove("active");
+      });
+    } else {
+      $("reader").classList.remove("active");
+    }
+  }
+
+  function startScanner(){
+    if(typeof Html5Qrcode === "undefined"){
+      showToast("Leitor indisponível — digite o código manualmente", "err");
+      return;
+    }
+    var readerDiv = $("reader");
+    readerDiv.classList.add("active");
+    $("scanHint").textContent = "Aponte a câmera para o código de barras...";
+
+    html5QrCode = new Html5Qrcode("reader");
+    var config = {
+      fps: 10,
+      qrbox: { width: 260, height: 120 },
+      formatsToSupport: [
+        Html5QrcodeSupportedFormats.EAN_13,
+        Html5QrcodeSupportedFormats.EAN_8,
+        Html5QrcodeSupportedFormats.CODE_128,
+        Html5QrcodeSupportedFormats.UPC_A,
+        Html5QrcodeSupportedFormats.UPC_E,
+        Html5QrcodeSupportedFormats.CODE_39
+      ]
+    };
+
+    html5QrCode.start(
+      { facingMode: "environment" },
+      config,
+      function onScanSuccess(decodedText){
+        $("inpBarcode").value = decodedText;
+        showToast("Código lido: " + decodedText, "ok");
+        if(navigator.vibrate){ navigator.vibrate(80); }
+        stopScanner();
+        autoPreencherDescricao();
+        var descEl = $("inpDesc");
+        descEl.focus();
+        if(descEl.value){ descEl.select(); }
+      },
+      function onScanFailure(){ /* ignore per-frame failures */ }
+    ).then(function(){
+      scanning = true;
+    }).catch(function(err){
+      $("scanHint").textContent = "Não foi possível acessar a câmera. Digite o código manualmente.";
+      showToast("Câmera indisponível neste dispositivo/navegador", "err");
+      readerDiv.classList.remove("active");
+    });
+  }
+
+  $("btnScan").addEventListener("click", function(){
+    if(scanning){ stopScanner(); }
+    else{ startScanner(); }
+  });
+
+  $("btnAdd").addEventListener("click", addItem);
+  $("inpQty").addEventListener("keydown", function(e){ if(e.key === "Enter"){ addItem(); } });
+  $("inpDesc").addEventListener("keydown", function(e){ if(e.key === "Enter"){ $("inpQty").focus(); } });
+  $("inpBarcode").addEventListener("keydown", function(e){ if(e.key === "Enter"){ autoPreencherDescricao(); $("inpDesc").focus(); } });
+  $("inpBarcode").addEventListener("blur", autoPreencherDescricao);
+
+  $("btnClear").addEventListener("click", function(){
+    if(items.length === 0) return;
+    if(confirm("Limpar toda a lista de itens?")){
+      items = [];
+      saveState();
+      renderList();
+      showToast("Lista limpa");
+    }
+  });
+
+  $("btnFinalize").addEventListener("click", function(){
+    if(items.length === 0){
+      showToast("Adicione ao menos um item à lista", "err");
+      return;
+    }
+    var today = new Date();
+    var dstr = String(today.getDate()).padStart(2,"0") + "/" + String(today.getMonth()+1).padStart(2,"0") + "/" + today.getFullYear();
+    $("inpOrderName").value = "Pedido Reposição - " + dstr;
+    $("modalFinalize").classList.add("show");
+    setTimeout(function(){ $("inpOrderName").focus(); $("inpOrderName").select(); }, 100);
+  });
+
+  $("btnCancelModal").addEventListener("click", function(){
+    $("modalFinalize").classList.remove("show");
+  });
+
+  $("btnConfirmFinalize").addEventListener("click", function(){
+    var orderName = $("inpOrderName").value.trim() || "Pedido de Reposição";
+    var storeName = $("inpStore").value.trim();
+    var requester = $("inpRequester").value.trim();
+
+    orderInfo = { name: orderName, store: storeName, requester: requester, pedidoId: "" };
+    items.forEach(function(it){ it.separado = false; });
+    mode = "separacao";
+    saveState();
+    renderList();
+
+    generatePDF(orderName, storeName, requester);
+    $("modalFinalize").classList.remove("show");
+    showToast("Lista de separação pronta", "ok");
+
+    if(apiUrl){
+      apiPost("criarPedido", {
+        nome: orderName, loja: storeName, solicitante: requester,
+        itens: items.map(function(it){
+          return { itemId: it.id, barcode: it.barcode, desc: it.desc, qty: it.qty, unit: it.unit };
+        })
+      }).then(function(res){
+        if(res && res.ok){
+          orderInfo.pedidoId = res.pedidoId;
+          saveState();
+          startPolling();
+          showToast("Pedido sincronizado no Sheets", "ok");
+        } else {
+          showToast("Não foi possível sincronizar o pedido", "err");
+        }
+      }).catch(function(){
+        showToast("Sem conexão com o Sheets — pedido salvo só neste aparelho", "err");
+      });
+    }
+  });
+
+  $("btnEditList").addEventListener("click", function(){
+    if(confirm("Voltar para edição da lista? Isso não apaga os itens, mas sai do modo separação.")){
+      mode = "montagem";
+      saveState();
+      stopPolling();
+      renderList();
+    }
+  });
+
+  $("btnReprintPDF").addEventListener("click", function(){
+    if(items.length === 0){ showToast("Lista vazia", "err"); return; }
+    generatePDF(orderInfo.name || "Pedido de Reposição", orderInfo.store || "", orderInfo.requester || "");
+  });
+
+  $("btnNewOrder").addEventListener("click", function(){
+    if(confirm("Iniciar um novo pedido? A lista atual será apagada.")){
+      if(apiUrl && orderInfo.pedidoId){
+        apiPost("concluirPedido", { pedidoId: orderInfo.pedidoId }).catch(function(){});
+      }
+      stopPolling();
+      items = [];
+      mode = "montagem";
+      orderInfo = { name:"", store:"", requester:"", pedidoId:"" };
+      saveState();
+      renderList();
+      showToast("Novo pedido iniciado");
+    }
+  });
+
+  // ---------- Sincronização entre aparelhos ----------
+
+  function startPolling(){
+    stopPolling();
+    if(!apiUrl || !orderInfo.pedidoId) return;
+    pollTimer = setInterval(function(){
+      if(mode !== "separacao" || !orderInfo.pedidoId) return;
+      apiGet({ action: "obterPedido", id: orderInfo.pedidoId }).then(function(res){
+        if(!res || !res.ok) return;
+        var remoteById = {};
+        res.itens.forEach(function(it){ remoteById[it.itemId] = it; });
+        var changed = false;
+        items.forEach(function(it){
+          var r = remoteById[it.id];
+          if(r && r.separado !== it.separado){ it.separado = r.separado; changed = true; }
+        });
+        if(changed){ saveState(); renderList(); }
+      }).catch(function(){});
+    }, 6000);
+  }
+  function stopPolling(){
+    if(pollTimer){ clearInterval(pollTimer); pollTimer = null; }
+  }
+
+  // ---------- Configurações ----------
+
+  $("btnSettings").addEventListener("click", function(){
+    $("inpApiUrl").value = apiUrl;
+    $("settingsStatus").textContent = "";
+    $("modalSettings").classList.add("show");
+  });
+  $("btnCancelSettings").addEventListener("click", function(){
+    $("modalSettings").classList.remove("show");
+  });
+  $("btnSaveSettings").addEventListener("click", function(){
+    var url = $("inpApiUrl").value.trim();
+    var statusEl = $("settingsStatus");
+    if(!url){
+      apiUrl = "";
+      localStorage.removeItem(API_URL_KEY);
+      updateSyncBadge();
+      stopPolling();
+      $("modalSettings").classList.remove("show");
+      showToast("Sincronização desativada — modo local");
+      return;
+    }
+    statusEl.style.color = "#888";
+    statusEl.textContent = "Testando conexão...";
+    fetch(url + "?action=ping").then(function(r){ return r.json(); }).then(function(res){
+      if(res && res.ok){
+        apiUrl = url;
+        localStorage.setItem(API_URL_KEY, url);
+        updateSyncBadge();
+        statusEl.style.color = "#2E7D32";
+        statusEl.textContent = "Conectado com sucesso!";
+        setTimeout(function(){ $("modalSettings").classList.remove("show"); }, 700);
+        if(mode === "separacao" && orderInfo.pedidoId){ startPolling(); }
+      } else {
+        statusEl.style.color = "#C0392B";
+        statusEl.textContent = "Não foi possível conectar. Verifique a URL.";
+      }
+    }).catch(function(){
+      statusEl.style.color = "#C0392B";
+      statusEl.textContent = "Não foi possível conectar. Verifique a URL e o deploy do Apps Script.";
+    });
+  });
+
+  // ---------- Pedidos em aberto ----------
+
+  $("btnOpenOrders").addEventListener("click", function(){
+    var list = $("ordersList");
+    if(!apiUrl){
+      list.innerHTML = '<div class="empty">Configure a sincronização (⚙️) para ver pedidos de outros aparelhos.</div>';
+      $("modalOrders").classList.add("show");
+      return;
+    }
+    list.innerHTML = '<div class="empty">Carregando...</div>';
+    $("modalOrders").classList.add("show");
+    apiGet({ action: "listarPedidos", status: "Aberto" }).then(function(res){
+      if(!res || !res.ok || !res.pedidos.length){
+        list.innerHTML = '<div class="empty">Nenhum pedido em aberto.</div>';
+        return;
+      }
+      var html = "";
+      res.pedidos.forEach(function(p){
+        var pct = p.totalItens ? Math.round((p.itensSeparados / p.totalItens) * 100) : 0;
+        html += '<div class="item" data-id="' + p.id + '" style="cursor:pointer;">' +
+          '<div class="info">' +
+            '<div class="desc">' + escapeHtml(p.nome) + '</div>' +
+            '<div class="meta">' + escapeHtml(p.loja || "—") + ' · ' + p.itensSeparados + '/' + p.totalItens + ' separados (' + pct + '%)</div>' +
+          '</div>' +
+        '</div>';
+      });
+      list.innerHTML = html;
+      Array.prototype.forEach.call(list.querySelectorAll(".item"), function(el){
+        el.addEventListener("click", function(){
+          loadOrder(el.getAttribute("data-id"));
+        });
+      });
+    }).catch(function(){
+      list.innerHTML = '<div class="empty">Erro ao carregar pedidos.</div>';
+    });
+  });
+  $("btnCloseOrders").addEventListener("click", function(){
+    $("modalOrders").classList.remove("show");
+  });
+
+  function loadOrder(pedidoId){
+    apiGet({ action: "obterPedido", id: pedidoId }).then(function(res){
+      if(!res || !res.ok){ showToast("Erro ao carregar pedido", "err"); return; }
+      orderInfo = { name: res.pedido.nome, store: res.pedido.loja, requester: res.pedido.solicitante, pedidoId: res.pedido.id };
+      items = res.itens.map(function(it){
+        return { id: it.itemId, barcode: it.barcode, desc: it.desc, qty: it.qty, unit: it.unit, separado: it.separado };
+      });
+      mode = "separacao";
+      saveState();
+      renderList();
+      startPolling();
+      $("modalOrders").classList.remove("show");
+      showToast("Pedido carregado", "ok");
+    }).catch(function(){
+      showToast("Erro ao carregar pedido", "err");
+    });
+  }
+
+  function sanitizeFilename(s){
+    return s.normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+      .replace(/[^a-zA-Z0-9\-_ ]/g,"").trim().replace(/\s+/g,"_");
+  }
+
+  function generatePDF(orderName, storeName, requester){
+    try{
+      var jsPDFCtor = window.jspdf.jsPDF;
+      var doc = new jsPDFCtor({ unit: "mm", format: "a4" });
+
+      var pageW = doc.internal.pageSize.getWidth();
+      var margin = 14;
+      var y = 0;
+
+      // Cores da marca (RGB)
+      var azul = [27,42,74];
+      var amarelo = [255,196,0];
+      var amareloEscuro = [230,161,0];
+      var grafite = [51,51,51];
+      var cinzaClaro = [247,247,245];
+
+      // Cabeçalho
+      doc.setFillColor(azul[0],azul[1],azul[2]);
+      doc.rect(0,0,pageW,26,"F");
+      doc.setFillColor(amarelo[0],amarelo[1],amarelo[2]);
+      doc.rect(0,26,pageW,2.2,"F");
+
+      doc.setTextColor(255,255,255);
+      doc.setFont("helvetica","bold");
+      doc.setFontSize(15);
+      doc.text("REDE NILO SUPERMERCADOS", margin, 11);
+      doc.setFontSize(10);
+      doc.setFont("helvetica","normal");
+      doc.text("Pedido de Reposição — Depósito → Loja", margin, 18);
+
+      y = 36;
+
+      // Bloco de informações do pedido
+      doc.setFillColor(cinzaClaro[0],cinzaClaro[1],cinzaClaro[2]);
+      doc.roundedRect(margin, y, pageW - margin*2, 26, 2, 2, "F");
+
+      doc.setTextColor(grafite[0],grafite[1],grafite[2]);
+      doc.setFont("helvetica","bold");
+      doc.setFontSize(11);
+      doc.text(orderName, margin + 4, y + 8);
+
+      doc.setFont("helvetica","normal");
+      doc.setFontSize(9);
+      var infoY = y + 15;
+      var now = new Date();
+      var dataHora = String(now.getDate()).padStart(2,"0") + "/" + String(now.getMonth()+1).padStart(2,"0") + "/" + now.getFullYear() +
+        " às " + String(now.getHours()).padStart(2,"0") + ":" + String(now.getMinutes()).padStart(2,"0");
+
+      doc.text("Data de emissão: " + dataHora, margin + 4, infoY);
+      if(storeName){ doc.text("Loja destino: " + storeName, margin + 4, infoY + 5); }
+      if(requester){
+        doc.text("Solicitante: " + requester, pageW - margin - 4, infoY, { align: "right" });
+      }
+
+      y += 32;
+
+      // Tabela de itens (com coluna de checkbox — serve de base para a separação)
+      var colX = {
+        chk: margin + 2,
+        idx: margin + 12,
+        barcode: margin + 22,
+        desc: margin + 54,
+        qty: pageW - margin - 30,
+        unit: pageW - margin - 12
+      };
+      var rowH = 8;
+
+      function drawTableHeader(){
+        doc.setFillColor(azul[0],azul[1],azul[2]);
+        doc.rect(margin, y, pageW - margin*2, rowH, "F");
+        doc.setTextColor(255,255,255);
+        doc.setFont("helvetica","bold");
+        doc.setFontSize(8.5);
+        doc.text("OK", colX.chk, y + 5.5);
+        doc.text("#", colX.idx, y + 5.5);
+        doc.text("CÓDIGO", colX.barcode, y + 5.5);
+        doc.text("DESCRIÇÃO", colX.desc, y + 5.5);
+        doc.text("QTD", colX.qty, y + 5.5, { align: "right" });
+        doc.text("UN", colX.unit, y + 5.5, { align: "right" });
+        y += rowH;
+      }
+
+      drawTableHeader();
+
+      doc.setFont("helvetica","normal");
+      doc.setFontSize(8.5);
+
+      items.forEach(function(it, i){
+        if(y > 272){
+          doc.addPage();
+          y = 16;
+          drawTableHeader();
+        }
+        if(i % 2 === 0){
+          doc.setFillColor(cinzaClaro[0],cinzaClaro[1],cinzaClaro[2]);
+          doc.rect(margin, y, pageW - margin*2, rowH, "F");
+        }
+
+        // caixa de marcação em branco (para conferência manual no depósito)
+        doc.setDrawColor(150,150,150);
+        doc.setLineWidth(0.35);
+        doc.rect(colX.chk, y + 1.8, 4.4, 4.4);
+
+        doc.setTextColor(grafite[0],grafite[1],grafite[2]);
+        doc.text(String(i+1), colX.idx, y + 5.5);
+        doc.text(String(it.barcode || "—"), colX.barcode, y + 5.5);
+
+        var descLines = doc.splitTextToSize(it.desc, colX.qty - colX.desc - 6);
+        doc.text(descLines[0], colX.desc, y + 5.5);
+
+        doc.setFont("helvetica","bold");
+        doc.text(String(it.qty), colX.qty, y + 5.5, { align: "right" });
+        doc.setFont("helvetica","normal");
+        doc.text(String(it.unit), colX.unit, y + 5.5, { align: "right" });
+
+        y += rowH;
+      });
+
+      // Linha de total
+      doc.setDrawColor(amareloEscuro[0],amareloEscuro[1],amareloEscuro[2]);
+      doc.setLineWidth(0.6);
+      doc.line(margin, y + 2, pageW - margin, y + 2);
+      doc.setFont("helvetica","bold");
+      doc.setFontSize(9.5);
+      doc.setTextColor(azul[0],azul[1],azul[2]);
+      doc.text("Total de itens: " + items.length, margin, y + 9);
+
+      // Assinaturas
+      var sigY = y + 26;
+      if(sigY > 270){ doc.addPage(); sigY = 30; }
+      doc.setDrawColor(180,180,180);
+      doc.setLineWidth(0.3);
+      doc.line(margin, sigY, margin + 75, sigY);
+      doc.line(pageW - margin - 75, sigY, pageW - margin, sigY);
+      doc.setFont("helvetica","normal");
+      doc.setFontSize(8.5);
+      doc.setTextColor(120,120,120);
+      doc.text("Separado por", margin, sigY + 5);
+      doc.text("Conferido/Recebido por", pageW - margin - 75, sigY + 5);
+
+      // Rodapé em todas as páginas
+      var totalPages = doc.internal.getNumberOfPages();
+      for(var p = 1; p <= totalPages; p++){
+        doc.setPage(p);
+        var pageH = doc.internal.pageSize.getHeight();
+        doc.setFontSize(7.5);
+        doc.setTextColor(150,150,150);
+        doc.setFont("helvetica","normal");
+        doc.text("Rede Nilo Supermercados — Documento gerado automaticamente", margin, pageH - 8);
+        doc.text("Página " + p + "/" + totalPages, pageW - margin, pageH - 8, { align: "right" });
+      }
+
+      var fname = sanitizeFilename(orderName) || "pedido_reposicao";
+      doc.save(fname + ".pdf");
+
+      showToast("PDF gerado com sucesso!", "ok");
+
+    }catch(err){
+      console.error(err);
+      showToast("Erro ao gerar PDF: " + err.message, "err");
+    }
+  }
+
+  // Init
+  loadState();
+  updateSyncBadge();
+  loadProdutosDB();
+  renderList();
+  if(apiUrl && mode === "separacao" && orderInfo.pedidoId){
+    startPolling();
+  }
+
+})();
+</script>
+</body>
+</html>
